@@ -8,7 +8,9 @@ const Book = require('./models/Book');
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: "*"
+}));
 app.use(express.json());
 
 // DB Connect
