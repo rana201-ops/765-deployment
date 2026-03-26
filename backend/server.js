@@ -1,56 +1,37 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-
-const Book = require('./models/Book');
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 
-// Middleware
+// ✅ CORS FIX (IMPORTANT)
 app.use(cors({
-  origin: "*"
+  origin: "*",   // allow all (easy fix)
+  methods: ["GET", "POST", "PUT", "DELETE"],
 }));
+
 app.use(express.json());
 
-// DB Connect
+// DB connect
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ DB Connected"))
-  .catch(err => console.log("❌ DB Error:", err));
+  .then(() => console.log("DB Connected"))
+  .catch(err => console.log(err));
 
-// Routes
+// routes
+const Book = require("./models/Book");
 
-// Test route
-app.get('/', (req, res) => {
-  res.send("API Running 🚀");
+// GET books
+app.get("/books", async (req, res) => {
+  const books = await Book.find();
+  res.json(books);
 });
 
-// GET all books
-app.get('/books', async (req, res) => {
-  try {
-    const books = await Book.find();
-    res.json(books);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+// POST book
+app.post("/books", async (req, res) => {
+  const newBook = new Book(req.body);
+  await newBook.save();
+  res.json(newBook);
 });
 
-// ADD new book
-app.post('/books', async (req, res) => {
-  try {
-    const { title, price } = req.body;
-
-    const newBook = new Book({ title, price });
-    await newBook.save();
-
-    res.json(newBook);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// Server start
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+app.listen(5000, () => console.log("Server running"));
